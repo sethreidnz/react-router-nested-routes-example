@@ -26,3 +26,71 @@ https://react-router-nested-routes-example.netlify.app/
 Notice if you click on Page 1 from the home page the breadcrumb and the page content area initially say "Loading.." until the data has loaded. You can also click on the "View", "Edit" or "Parameters" button to switch between the three sub-routes. Then if you click on the "this is a link to page 2" then you will notice the PageHeader content stays with the breadcrumb and the main content showing "Loading..." once again until the data is loaded. One the data has been loaded for all three pages the change now become instant with no UI flicker or re-rendering of the layout.
 
 ![Live demo of the steps to show nested routing at work](https://github.com/sethreidnz/react-router-nested-routes-example/blob/main/images/CleanShot%202023-04-26%20at%2014.24.41.gif?raw=true)
+
+## How it works
+
+There are two ways to do sub-routes in react-router
+
+### Relative routes controlled by the child component
+
+This is what was done in this project where you have a structure like this:
+
+```tsx
+// <Routes />
+function Routes(){
+    return (
+        <Routes>
+            <Route path="/pages/:pageId/*" element={<PageContainer />} />
+        </Routes>
+    )
+}
+
+// <PageContainer />
+function PageContainer() {
+    return (
+        {/* Define shared UI*/}
+        <PageHeader />
+        {/* Define sub-routes*/}
+        <Routes>
+          <Route path="view" element={<PageView />} >
+          <Route path="view" element={<PageEdit />} >
+          <Route path="view" element={<PageParameters />} >
+        </Routes>
+    )
+}
+```
+
+There are two important things to note:
+
+1. The top level route uses a wildcard `/*` at the end of it's path which means it will match all routes that start that pattern
+2. The child routes use relative routes which means they **do not** include a leading `/` so are like `view` and `edit` which when combined with the top level one would result in a full route of `/pages/:pageId/view` etc.
+
+### Nested routes with `<Outlet />`
+
+This is not the way that it was done in this project but worth mentioning
+
+```tsx
+// <Routes />
+function Routes() {
+  return (
+    <Routes>
+      <Route path="/pages" element={<PageLayout />}>
+        <Route path="/edit" element={<PageEdit />} />
+      </Route>
+    </Routes>
+  );
+}
+
+// <PageLayout />
+import { Outlet } from "react-router-dom";
+function PageLayout() {
+  return (
+    <div>
+      <nav />
+      <Outlet />
+    </div>
+  );
+}
+```
+
+The problem with this is it means that the `<PageEdit />` does not have access to any of what has been done in the <PageLayout /> component and requires you to have all of your routes and sub-routes defined in on place in a top level route component.
