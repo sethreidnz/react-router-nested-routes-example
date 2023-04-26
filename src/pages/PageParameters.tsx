@@ -1,3 +1,3 @@
-export function PageParameters(){
-    return <div>PageParameters</div>
+export function PageParameters() {
+  return <div>PageParameters</div>;
 }

@@ -2,8 +2,8 @@ import { useParams } from "react-router-dom";
 import { usePageRepository } from "../repository/usePageRepository";
 
 export function PageView() {
-    const pageRepository = usePageRepository();
-    const { pageId } = useParams();
+  const pageRepository = usePageRepository();
+  const { pageId } = useParams();
 
   if (!pageId) {
     return null;

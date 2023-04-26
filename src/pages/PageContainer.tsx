@@ -1,10 +1,12 @@
 import { Link, Route, Routes, useMatch, useParams } from "react-router-dom";
 import { PageEdit } from "./PageEdit";
 import { PageView } from "./PageView";
-import { Page } from "../repository/pageRepository";
 import { usePageRepository } from "../repository/usePageRepository";
-import { PageBreadcrumb } from "../components/Breadcrumb";
+import { PageBreadcrumb } from "./components/PageBreadcrumb";
 import { PageParameters } from "./PageParameters";
+import { useEffect, useState } from "react";
+import { Page } from "../repository/pageRepository";
+import { isDefined } from "../utility/isDefined";
 
 enum PageSubRoute {
   View = "view",
@@ -12,7 +14,7 @@ enum PageSubRoute {
   Parameters = "parameters",
 }
 
-function PageHeader({ page }: { page: Page }) {
+function PageHeader(props: PageLoadingData) {
   const match = useMatch({
     path: `/pages/:pageId/*`,
   });
@@ -33,8 +35,7 @@ function PageHeader({ page }: { page: Page }) {
   }
   return (
     <>
-      <PageBreadcrumb page={page} subRoute={getSubRoute()} />
-      <h2>{page.title}</h2>
+      <PageBreadcrumb {...props} subRoute={getSubRoute()} />
       <ul>
         <li>
           <Link to="view">View</Link>
@@ -50,28 +51,47 @@ function PageHeader({ page }: { page: Page }) {
   );
 }
 
+type PageLoadingData =
+  | { item?: Page; hasLoaded: true }
+  | { item: undefined; hasLoaded: false };
+
 export function PageContainer() {
   const pageRepository = usePageRepository();
   const { pageId } = useParams();
-
-  if (!pageId) {
-    return null;
-  }
-
-  const page = pageRepository.get(pageId);
-  if (!page) {
-    return null;
-  }
+  const [pageData, setPageData] = useState<PageLoadingData>({
+    hasLoaded: false,
+    item: undefined,
+  });
+  useEffect(() => {
+    async function loadPages() {
+      if (!pageId) return;
+      if (
+        !pageData.hasLoaded ||
+        (pageData.hasLoaded &&
+          isDefined(pageData.item) &&
+          pageId != pageData.item.id)
+      ) {
+        setPageData({ hasLoaded: false, item: undefined });
+        const page = await pageRepository.load(pageId);
+        setPageData({ hasLoaded: true, item: page });
+      }
+    }
+    loadPages();
+  }, [pageData.hasLoaded, pageData.item, pageId, pageRepository]);
 
   return (
     <>
-      <PageHeader page={page} />
-      <Routes>
-        <Route index element={<PageView />} />
-        <Route path={PageSubRoute.View} element={<PageView />} />
-        <Route path={PageSubRoute.Edit} element={<PageEdit />} />
-        <Route path={PageSubRoute.Parameters} element={<PageParameters />} />
-      </Routes>
+      <PageHeader {...pageData} />
+      {!pageData.hasLoaded ? (
+        <>Loading</>
+      ) : (
+        <Routes>
+          <Route index element={<PageView />} />
+          <Route path={PageSubRoute.View} element={<PageView />} />
+          <Route path={PageSubRoute.Edit} element={<PageEdit />} />
+          <Route path={PageSubRoute.Parameters} element={<PageParameters />} />
+        </Routes>
+      )}
     </>
   );
 }

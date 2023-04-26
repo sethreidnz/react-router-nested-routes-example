@@ -1,3 +1,3 @@
-export function PageEdit(){
-    return <div>PageEdit</div>
+export function PageEdit() {
+  return <div>PageEdit</div>;
 }

@@ -1,29 +1,57 @@
-import { Link } from "react-router-dom";
-
+import { wait } from "../utility/wait";
+import { pages } from "../pages/data";
 
 export type Page = {
-    id: string;
-    title: string;
-    content: JSX.Element;
-}
+  id: string;
+  title: string;
+  content: JSX.Element;
+};
 
 export interface IPageRepository {
-    get(pageId: string): Page | undefined;
-    getAll(): Array<Page>;
+  get(pageId: string): Page | undefined;
+  load(pageId: string): Promise<Page | undefined>;
+  getAll(): Promise<Array<Page>>;
+}
+
+async function fetchPage(pageId: string) {
+  await wait(1000);
+  const fetchedPage = pages.find((page) => page.id === pageId);
+  return fetchedPage;
+}
+
+async function fetchPages() {
+  await wait(1000);
+  return pages;
 }
 
 export class PageRepository implements IPageRepository {
-    private pages: Array<Page> = [
-        {id: '1', title: 'Page 1', content: <><Link to={`/pages/2/view`}>This is a link to page 2</Link></>},
-        {id: '2', title: 'Page 2', content: <><Link to={`/pages/3/view`}>This is a link to page 3</Link></>},
-        {id: '3', title: 'Page 3', content: <><Link to={`/pages/1/view`}>This is a link to page 1</Link></>},
-    ];
-    
-    public get(pageId: string): Page | undefined {
-        return this.pages.find(page => page.id === pageId);
-    }
+  private cachedPages: Map<string, Page> = new Map();
 
-    public getAll(): Array<Page> {
-        return this.pages;
+  public get(pageId: string): Page | undefined {
+    const cachedPage = this.cachedPages.get(pageId);
+    if (cachedPage) {
+      return cachedPage;
+    } else {
+      return undefined;
     }
+  }
+
+  public async load(pageId: string): Promise<Page | undefined> {
+    const cachedPage = this.get(pageId);
+    if (cachedPage) {
+      return cachedPage;
+    } else {
+      const fetchedPage = await fetchPage(pageId);
+      if (fetchedPage) {
+        this.cachedPages.set(pageId, fetchedPage);
+        return this.cachedPages.get(pageId);
+      } else {
+        return undefined;
+      }
+    }
+  }
+
+  public async getAll(): Promise<Array<Page>> {
+    return await fetchPages();
+  }
 }
