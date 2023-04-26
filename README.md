@@ -25,4 +25,4 @@ https://react-router-nested-routes-example.netlify.app/
 
 Notice if you click on Page 1 from the home page the breadcrumb and the page content area initially say "Loading.." until the data has loaded. You can also click on the "View", "Edit" or "Parameters" button to switch between the three sub-routes. Then if you click on the "this is a link to page 2" then you will notice the PageHeader content stays with the breadcrumb and the main content showing "Loading..." once again until the data is loaded. One the data has been loaded for all three pages the change now become instant with no UI flicker or re-rendering of the layout.
 
-![Live demo of the steps to show nested routing at work](images/CleanShot 2023-04-26 at 14.24.41.gif)
+![Live demo of the steps to show nested routing at work](https://github.com/sethreidnz/react-router-nested-routes-example/blob/main/images/CleanShot%202023-04-26%20at%2014.24.41.gif?raw=true)
