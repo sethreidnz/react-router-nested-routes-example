@@ -65,6 +65,8 @@ There are two important things to note:
 1. The top level route uses a wildcard `/*` at the end of it's path which means it will match all routes that start that pattern
 2. The child routes use relative routes which means they **do not** include a leading `/` so are like `view` and `edit` which when combined with the top level one would result in a full route of `/pages/:pageId/view` etc.
 
+This has the advantage of meaning that the `PageContainer` can take control of the required loading for all it's sub-routes, and rendering the common UI, while then handing over control of any other things that need to be done, to the sub-routes. It also means that you collocate the related views together instead of having everything in a big `Routes` (as shown in the alternative approach below).
+
 ### Nested routes with `<Outlet />`
 
 This is not the way that it was done in this project but worth mentioning
