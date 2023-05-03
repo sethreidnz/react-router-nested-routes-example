@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { usePageRepository } from "../repository/usePageRepository";
 import { useEffect, useState } from "react";
-import { Page } from "../repository/pageRepository";
+import { IPage } from "../pages/models/Page";
 
 type AllPagesData =
-  | { items: Array<Page>; hasLoaded: true }
+  | { items: Array<IPage>; hasLoaded: true }
   | { items: []; hasLoaded: false };
 
 export function Home() {
@@ -33,7 +33,7 @@ export function Home() {
       <ul>
         {allPages.items.map((page) => (
           <li key={page.id}>
-            <Link to={`pages/${page.id}/view`}>{page.title}</Link>
+            <Link to={page.uriToView()}>{page.name}</Link>
           </li>
         ))}
       </ul>

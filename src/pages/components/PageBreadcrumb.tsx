@@ -38,7 +38,7 @@ export function PageBreadcrumb({
         <li>Pages</li>
         <li>
           {">"}
-          {item.title}
+          {item.name}
         </li>
         {subRoute && (
           <li>
