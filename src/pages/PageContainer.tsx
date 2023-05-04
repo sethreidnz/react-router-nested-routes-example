@@ -1,17 +1,15 @@
-import {
-  Link,
-  Outlet,
-  Route,
-  Routes,
-  useMatch,
-  useParams,
-} from "react-router-dom";
+import { Link, Route, Routes } from "react-router-dom";
 import { usePageRepository } from "../repository/usePageRepository";
 import { PageBreadcrumb } from "./components/PageBreadcrumb";
 import { useEffect, useState } from "react";
 import { isDefined } from "../utility/isDefined";
 import { IPage } from "./models/Page";
 import { PageSubRoute } from "./models/PageSubRoutes";
+import { PageView } from "./routes/PageView";
+import { PageParameters } from "./routes/PageParameters";
+import { PageRouteData, usePageRouteData } from "./usePageRouteData";
+import { PageProperties } from "./routes/PageProperties";
+import { LinkWithQuery } from "./components/LinkWithQuery";
 
 enum PageMode {
   View = "view",
@@ -20,30 +18,24 @@ enum PageMode {
 }
 
 function PageHeader(props: PageLoadingData) {
-  const { mode, subRoute } = usePageRouteData();
+  const { mode, setMode, subRoute } = usePageRouteData();
   const { item: page } = props;
   if (!page) return null;
-  console.log(mode);
   return (
     <>
       <PageBreadcrumb {...props} subRoute={subRoute} />
       <ul>
         <li>
-          {mode === PageMode.View ? (
-            <Link to={PageSubRoute.Properties} relative="path">
-              Properties
-            </Link>
-          ) : (
-            <Link to={PageSubRoute.Parameters} relative="path">
-              Parameters
-            </Link>
-          )}
+          <LinkWithQuery to={PageSubRoute.Properties}>Properties</LinkWithQuery>
+        </li>
+        <li>
+          <LinkWithQuery to={PageSubRoute.Parameters}>Parameters</LinkWithQuery>
         </li>
         <li>
           {mode === PageMode.View ? (
-            <Link to={page.uriToEdit()}>Edit</Link>
+            <button onClick={() => setMode(PageMode.Edit)}>Edit</button>
           ) : (
-            <Link to={page.uriToView()}>View</Link>
+            <button onClick={() => setMode(PageMode.View)}>View</button>
           )}
         </li>
       </ul>
@@ -54,7 +46,7 @@ function PageHeader(props: PageLoadingData) {
 type PageLoadingData =
   | { item: undefined; hasLoaded: false; status: "idle" }
   | { item: undefined; hasLoaded: false; status: "fetching" }
-  | { item?: IPage; hasLoaded: true; status: "success" }
+  | { item: IPage; hasLoaded: true; status: "success" }
   | { item: undefined; hasLoaded: true; status: "failed"; error: string };
 
 export function PageContainer() {
@@ -69,20 +61,19 @@ export function PageContainer() {
     async function loadPages() {
       if (shouldRefetch(routeData, pageData)) {
         setPageData({ hasLoaded: false, item: undefined, status: "fetching" });
-        if (isDefined(routeData.pageId)) {
-          const page = await pageRepository.loadById(routeData.pageId);
-          setPageData({ hasLoaded: true, item: page, status: "success" });
-        } else if (isDefined(routeData.pageName)) {
-          const page = await pageRepository.loadByName(routeData.pageName);
-          setPageData({ hasLoaded: true, item: page, status: "success" });
-        } else {
+        const page = await pageRepository.loadByIdOrName({
+          pageId: routeData.pageId,
+          pageName: routeData.pageName,
+        });
+        if (!page) {
           setPageData({
             hasLoaded: true,
-            item: undefined,
+            item: page,
             status: "failed",
-            error:
-              "Required route data not found: pageId, or pageName must be in the route.",
+            error: "Page not found",
           });
+        } else {
+          setPageData({ hasLoaded: true, item: page, status: "success" });
         }
       }
     }
@@ -90,13 +81,22 @@ export function PageContainer() {
   }, [pageData, pageRepository, routeData]);
 
   function renderContent() {
-    if (!pageData.hasLoaded) {
+    if (pageData.status == "fetching" || pageData.status == "idle") {
       return <>Loading</>;
-    }
-    if (pageData.status == "failed") {
+    } else if (pageData.status == "failed") {
       return <>Error: {pageData.error}</>;
+    } else {
+      return (
+        <Routes>
+          <Route
+            index
+            element={<PageView page={pageData.item} mode={routeData.mode} />}
+          />
+          <Route path={PageSubRoute.Parameters} element={<PageParameters />} />
+          <Route path={PageSubRoute.Properties} element={<PageProperties />} />
+        </Routes>
+      );
     }
-    return <Outlet />;
   }
 
   return (
@@ -123,46 +123,4 @@ function shouldRefetch(
   }
 
   return false;
-}
-
-type PageRouteData = {
-  mode: PageMode;
-  pageId?: string;
-  pageName?: string;
-  subRoute?: PageSubRoute;
-};
-
-function usePageRouteData(): PageRouteData {
-  const createPageMatch = useMatch({
-    path: `/pages/create`,
-  });
-  const viewPageMatch = useMatch({
-    path: `/pages/view/:pageName/*`,
-  });
-  const editPageMatch = useMatch({
-    path: `/pages/edit/:pageId/*`,
-  });
-  const { pageId, pageName } = useParams();
-  let mode: PageMode | undefined;
-  let subRoute: PageSubRoute | undefined;
-  if (viewPageMatch) {
-    mode = PageMode.View;
-    if (viewPageMatch.pathname.endsWith(PageSubRoute.Properties)) {
-      subRoute = PageSubRoute.Properties;
-    }
-  } else if (createPageMatch) {
-    mode = PageMode.Create;
-    if (createPageMatch.pathname.endsWith(PageSubRoute.Parameters)) {
-      subRoute = PageSubRoute.Parameters;
-    }
-  } else if (editPageMatch) {
-    mode = PageMode.Edit;
-    if (editPageMatch.pathname.endsWith(PageSubRoute.Parameters)) {
-      subRoute = PageSubRoute.Parameters;
-    }
-  } else {
-    throw new Error("Invalid route");
-  }
-
-  return { mode, pageId, pageName, subRoute };
 }

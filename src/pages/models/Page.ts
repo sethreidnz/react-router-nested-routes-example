@@ -1,3 +1,4 @@
+import { PageSearchParams } from "./PageSearchParams";
 import { PageSubRoute } from "./PageSubRoutes";
 
 export interface IPage {
@@ -19,13 +20,13 @@ export class Page implements IPage {
     return `/pages/create`;
   }
 
-  public uriToView(subRoute?: PageSubRoute): string {
-    const subRoutePath = subRoute ? `/${subRoute}` : "";
-    return `/pages/view/${this.name}${subRoutePath}`;
+  public uriToView(): string {
+    return `/pages/${this.name}`;
   }
 
-  public uriToEdit(subRoute?: PageSubRoute): string {
-    const subRoutePath = subRoute ? `/${subRoute}` : "";
-    return `/pages/edit/${this.id}${subRoutePath}`;
+  public uriToEdit(): string {
+    return `${this.uriToView()}?${PageSearchParams.PageId}=${this.id}&${
+      PageSearchParams.Mode
+    }=edit`;
   }
 }

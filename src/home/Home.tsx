@@ -30,13 +30,19 @@ export function Home() {
   return (
     <div>
       <h1>Home</h1>
-      <ul>
+      <table>
         {allPages.items.map((page) => (
-          <li key={page.id}>
-            <Link to={page.uriToView()}>{page.name}</Link>
-          </li>
+          <tr>
+            <td key={page.id}>{page.name}</td>
+            <td key={page.id}>
+              <Link to={page.uriToView()}>View</Link>
+            </td>
+            <td key={page.id}>
+              <Link to={page.uriToEdit()}>Edit</Link>
+            </td>
+          </tr>
         ))}
-      </ul>
+      </table>
     </div>
   );
 }

@@ -7,6 +7,13 @@ export interface IPageRepository {
   getByName(pageName: string): IPage | undefined;
   loadById(pageId: string): Promise<IPage | undefined>;
   loadByName(pageName: string): Promise<IPage | undefined>;
+  loadByIdOrName({
+    pageId,
+    pageName,
+  }: {
+    pageId?: string;
+    pageName?: string;
+  }): Promise<IPage | undefined>;
   getAll(): Promise<Array<IPage>>;
 }
 
@@ -53,6 +60,22 @@ export class PageRepository implements IPageRepository {
     } else {
       return undefined;
     }
+  }
+
+  public async loadByIdOrName({
+    pageId,
+    pageName,
+  }: {
+    pageId: string;
+    pageName: string;
+  }): Promise<IPage | undefined> {
+    if (pageId) {
+      return this.loadById(pageId);
+    }
+    if (pageName) {
+      return this.loadByName(pageName);
+    }
+    return undefined;
   }
 
   public async loadById(pageId: string): Promise<IPage | undefined> {
