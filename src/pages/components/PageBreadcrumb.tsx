@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { PageLoadingData } from "../models/PageLoadingData";
 
 type PageBreadcrumbProps = PageLoadingData & {
@@ -14,7 +15,7 @@ export function PageBreadcrumb({
       return (
         <>
           {" "}
-          <li>Pages</li>
+          <Link to="/">Home</Link>
           <li>
             {">"}
             Loading...
@@ -35,7 +36,7 @@ export function PageBreadcrumb({
     }
     return (
       <>
-        <li>Pages</li>
+        <Link to="/">Home</Link>
         <li>
           {">"}
           {item.name}

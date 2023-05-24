@@ -7,7 +7,7 @@ export const pages: Array<IPage> = [
     "Page 1",
     (
       <>
-        <Link to={`/pages/view/Page 1`}>This is a link to page 2</Link>
+        <Link to={`/pages/Page 2`}>This is a link to page 2</Link>
       </>
     )
   ),
@@ -16,7 +16,7 @@ export const pages: Array<IPage> = [
     "Page 2",
     (
       <>
-        <Link to={`/pages/view/Page 3`}>This is a link to page 3</Link>
+        <Link to={`/pages/Page 3`}>This is a link to page 3</Link>
       </>
     )
   ),
@@ -25,7 +25,7 @@ export const pages: Array<IPage> = [
     "Page 3",
     (
       <>
-        <Link to={`/pages/view/Page 1`}>This is a link to page 1</Link>
+        <Link to={`/pages/Page 1`}>This is a link to page 1</Link>
       </>
     )
   ),
